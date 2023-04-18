@@ -1,0 +1,327 @@
+# Custom Widgets
+<RoundedImage>:
+    name: "rounded image"
+    canvas.before:
+        RoundedRectangle:
+            id: home_example_image
+            source: './assets/overlay_example.png'
+            size: self.size
+            pos: self.pos
+            radius: [10]
+
+<RoundedLabel@Label>:
+    color: (239/255, 234/255, 216/255, 1)
+    bold: True
+    font_size: 22
+    background_color: (109/255, 139/255, 116/255, 1)
+    canvas.before:
+        Color:
+            rgba: self.background_color
+        RoundedRectangle:
+            radius: [10]
+            size: self.size
+            pos: self.pos
+
+<PageHeader@Label>
+    color: (239/255, 234/255, 216/255, 1)
+    bold: True
+    font_size: 30
+    pos_hint: {"x":0, "top":1}  # {"x", "y", "top", "bottom", "left", "right", "center_y", "center_x"}
+    size_hint: (1, .1)  # (width, height)
+    background_color: (109/255, 139/255, 116/255, 1)
+    canvas.before:
+        Color:
+            rgba: self.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<HomeButton@RoundedButton>
+    font_size: 20
+    size_hint: (.3, .1)
+
+<RoundedButton@Button>
+    color: (239/255, 234/255, 216/255, 1)
+    background_color: (0, 0, 0, 0)
+    background_normal: ''
+    canvas.before:
+        Color:
+            rgba: (95/255, 113/255, 97/255, 1)
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: [10]
+
+<SettingsButton@RoundedButton>
+    size_hint: .05,.1
+    Image:
+        source: './assets/settings_FILL0_wght400_GRAD0_opsz48.png'
+        center_x: self.parent.center_x
+        center_y: self.parent.center_y
+
+<BackButton@RoundedButton>
+    size_hint: .05,.1
+    Image:
+        source: './assets/arrow_back_FILL0_wght400_GRAD0_opsz48.png'
+        center_x: self.parent.center_x
+        center_y: self.parent.center_y
+
+<SwitchCameraButton@RoundedButton>
+    size_hint: .05,.1
+    Image:
+        source: './assets/flip_camera_ios_FILL0_wght400_GRAD0_opsz48.png'
+        center_x: self.parent.center_x
+        center_y: self.parent.center_y
+
+
+#:import Factory kivy.factory.Factory
+
+
+<ActivateButton@RoundedButton>
+    size_hint: .05,.1
+    Image:
+        id: activate_btn_img
+        source: './assets/play_circle_FILL0_wght400_GRAD0_opsz48.png'
+        size_hint: .05,.1
+        center_x: self.parent.center_x
+        center_y: self.parent.center_y
+
+# Pages
+WindowManager:
+    HomeWindow:
+    AboutWindow:
+    AppWindow:
+
+<HomeWindow>:
+    name: 'home'
+
+    FloatLayout:
+        size: root.width, root.height
+
+        PageHeader:
+            text: "Driver Monitor System"
+        
+        HomeButton:
+            text: "Launch Warning System"
+            pos_hint: {"x":.05, "top":.65}
+            on_release:
+                app.root.current = "app"
+                root.manager.transition.direction = "up"
+
+        HomeButton:
+            text: "About"
+            pos_hint: {"x":.05, "top":.35}
+            on_release:
+                app.root.current = "about"
+                root.manager.transition.direction = "left"
+                
+        BoxLayout:
+            orientation: 'vertical'
+            pos_hint: {"x": .45, "top": .75}
+            size_hint: (.5, .5)
+            Label: 
+                text: "Example System Output"
+                color: (95/255, 113/255, 97/255, 1)
+                size_hint: (.55, .15)  
+                bold: True
+                font_size: 20
+                text_size: self.size
+                padding_y: 5                           
+            RoundedImage:
+
+<AboutWindow>:
+    name: 'about'
+
+    FloatLayout:
+        size: root.width, root.height
+
+        PageHeader:
+            text: "ABOUT"
+
+        Label:
+            text: "What is this program?"
+            color: (95/255, 113/255, 97/255, 1)
+            text_size: self.size
+            font_size: 25
+            bold: True
+            halign: 'center'
+            pos_hint: {"center_x": 0.5, "y": 0.7}
+        Label:
+            text: "This is a Python based application used to run the driver monitoring system for my capstone project."
+            color: (95/255, 113/255, 97/255, 1)
+            text_size: self.size
+            font_size: 18
+            halign: 'center'
+            pos_hint: {"center_x": 0.5, "y": 0.575}
+        Label:
+            text: "By"
+            color: (95/255, 113/255, 97/255, 1)
+            text_size: self.size
+            font_size: 20
+            bold: True
+            halign: 'center'
+            pos_hint: {"center_x": 0.5, "y": 0.45}
+        Label:
+            text: "Arian Jahiri"
+            color: (95/255, 113/255, 97/255, 1)
+            text_size: self.size
+            font_size: 18
+            halign: 'center'
+            pos_hint: {"center_x": 0.5, "y": 0.325}
+        
+        RoundedButton:
+            text: "Go Back"
+            font_size: 20
+            size_hint: (.15, .075)
+            pos_hint: {"center_x": 0.5, "y": 0.15}
+            on_release:
+                app.root.current = "home"
+                root.manager.transition.direction = "right"
+
+
+<SettingsPopup>
+    auto_dismiss: False
+    size_hint: 0.5, 0.75
+    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+    title: "Inference Settings"
+    title_color: (239 / 255., 234 / 255., 216 / 255., 1.)
+    title_size: 22
+    separator_color:  (239 / 255., 234 / 255., 216 / 255., 1.)
+    background_color: (0,0,0,0)
+    overlay_color: (0,0,0,0)
+    canvas.before:
+        Color:
+            rgba: [109 / 255., 139 / 255., 116 / 255., 1.]
+        RoundedRectangle:
+            radius: [10]
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 5
+
+        BoxLayout:
+            spacing: 5
+            orientation: 'horizontal'
+            Label:
+                bold: True
+                font_size: 18
+                text: "Warning System ({})".format("ON" if warning_checkbox.active else "OFF")
+            CheckBox:
+                id: warning_checkbox
+                orientation: 'horizontal'
+                active: True
+
+        BoxLayout:
+            spacing: 5
+            orientation: 'vertical'
+            Label:
+                bold: True
+                font_size: 18
+                text: "Warning Threshold: {:.2f}".format(float(warning_slider.value))
+            Slider:
+                id: warning_slider
+                min: 0
+                max: 1
+                step: 0.05
+                orientation: 'horizontal'
+                value: 0.3
+
+        BoxLayout:
+            spacing: 5
+            orientation: 'vertical'
+            Label:
+                bold: True
+                font_size: 18
+                text: "Inference Frames per Second: {}".format(str(fps_slider.value))
+            Slider:
+                id: fps_slider
+                min: 1
+                max: 30
+                step: 1
+                orientation: 'horizontal'
+                value: 4
+
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 5
+            RoundedButton:
+                bold: True
+                text: "Save Settings"
+                font_size: 18
+                on_release:
+                    root.obj.update_settings(warning_checkbox.active, warning_slider.value, fps_slider.value)
+                    root.dismiss()
+                size_hint: (1, .6)
+            RoundedButton:
+                bold: True
+                text: "Cancel"
+                font_size: 18
+                on_release: root.dismiss()
+                size_hint: (1, .6)
+
+<AppWindow>:
+    name: 'app'
+    video_feed: video_feed
+    activate_btn: activate_btn
+    activate_label: activate_label
+    warning_label: warning_label
+
+    FloatLayout:
+        size: root.width, root.height
+
+        Image:
+            id: video_feed
+            pos_hint: {"center_x": 0.5, "center_y": 0.4}
+            allow_stretch: True
+            keep_ratio: False
+
+        PageHeader:
+            text: "Arian's Driver Monitor"
+
+        RoundedLabel:
+            pos_hint: {"center_x": 0.5, "y": 0.825}
+            font_size: 20
+            size_hint: (.5, .05)
+            id: activate_label
+            text: "Not active"
+
+        Label:
+            id: warning_label
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            size_hint: (.5, .5)
+            color: (239/255, 234/255, 216/255, 1)
+            bold: True
+            font_size: 32
+            text: "WARNING"
+            opacity: 0.0
+            background_color: (244/255, 67/255, 54/255, .8)
+            canvas.before:
+                Color:
+                    rgba: self.background_color
+                RoundedRectangle:
+                    radius: [10]
+                    size: self.size
+                    pos: self.pos
+
+        SettingsButton:
+            pos_hint: {"center_x": 0.05, "y": 0.20}
+            on_release: root.open_settings()
+
+        ActivateButton:
+            id: activate_btn
+            pos_hint: {"center_x": 0.05, "y": 0.35}
+            on_release: root.toggle_awareness()
+
+        SwitchCameraButton:
+            pos_hint: {"center_x": 0.05, "y": 0.50}
+            on_release: root.switch_camera()
+
+        BackButton:
+            pos_hint: {"center_x": 0.05, "y": 0.65}
+            on_release:
+                app.root.current = "home"
+                root.manager.transition.direction = "down"
