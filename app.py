@@ -97,7 +97,7 @@ class AppWindow(Screen):
         try:
             # Load CNN model
             self.model = tf.keras.models.load_model(
-                './models/pspnet_model2H5.h5',
+                './models/vgg_b_first.h5',
                 # custom_objects={"iou_score": sm.metrics.IOUScore}
             )
             # Setup video capture device
@@ -123,56 +123,84 @@ class AppWindow(Screen):
 
         # Flip horizontal and convert image to texture
         frame_flipped = cv2.flip(frame, 0)
-        frame_resized = cv2.resize(frame_flipped, (1280, 720))
-        frame_alphad = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2BGRA)
-        final_frame_buf = None
-        if self.latest_mask is not None and self.awarenessActivated is True:
-            # something...
-            final_frame_buf = cv2.addWeighted(frame_alphad, 1, self.latest_mask, 1, 0).tobytes()
-        else:
-            final_frame_buf = frame_alphad.tobytes()
+        frame_resized = cv2.resize(frame_flipped, (1280, 720)).tobytes()
+        # frame_alphad = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2BGRA)
+        # final_frame_buf = None
+        # if self.latest_mask is not None and self.awarenessActivated is True:
+        #     # something...
+        #     final_frame_buf = cv2.addWeighted(frame_alphad, 1, self.latest_mask, 1, 0).tobytes()
+        # else:
+        #     final_frame_buf = frame_alphad.tobytes()
 
-        img_texture = Texture.create(size=(1280, 720), colorfmt='bgra')
-        img_texture.blit_buffer(final_frame_buf, colorfmt='bgra', bufferfmt='ubyte')
+        img_texture = Texture.create(size=(1280, 720), colorfmt='bgr')
+        img_texture.blit_buffer(frame_resized, colorfmt='bgr', bufferfmt='ubyte')
         self.video_feed.texture = img_texture
 
     def update_mask_feed(self, *args):
-        if self.activate_label.text != 'SafeTrax is Active':
+        if self.activate_label.text != 'Monitor is Active':
             return
 
         ret, image = self.capture.read()
-        img_0 = cv2.resize(image, (432, 240)) / 255.0
-        img_2 = np.expand_dims(img_0, axis=0)
+        img_target = cv2.flip(image, 0)
+        img_target_2 = cv2.resize(img_target,  (224, 224)) / 255.0
+        img_target_3 = np.expand_dims(img_target_2, axis=0)
 
-        try:
-            pred_img = self.model.predict(img_2)[0]
-            th, img_thresh = cv2.threshold(src=pred_img, thresh=0.5, maxval=255, type=cv2.THRESH_BINARY)
+        pred = self.model.predict(img_target_3)[0]
 
-            new_img = np.expand_dims(img_thresh, axis=-1)
+        class_list = [
+            'safe driving',
+            'texting - right',
+            'talking on the phone - right',
+            'texting - left',
+            'talking on the phone - left',
+            'operating the radio',
+            'drinking',
+            'reaching behind',
+            'hair and makeup',
+            'talking to passenger'
+        ]
 
-            # warning system, if proportion of mask is not big enough, WARN
-            if cv2.countNonZero(new_img) / 103680 < self.warning_threshold:
-                self.warning_label.opacity = 1.0
+        pred_class = class_list[pred.argmax(axis=-1)]
 
-                # did warn ensures we only warn once per warn occurrence
-                if self.did_warn == False:
-                    playsound('./assets/tesla_warn.mp3', False)
-                    self.did_warn = True
-            else:
-                self.warning_label.opacity = 0.0
-                self.did_warn = False
+        print(pred_class)
 
-            new_img = new_img.astype(np.uint8)
-            final_img = cv2.cvtColor(new_img, cv2.COLOR_GRAY2BGRA)
-
-            final_img = cv2.flip(final_img, 0)
-
-            final_img = cv2.resize(final_img, (1280, 720))
-
-            self.latest_mask = final_img
-        except:
-            self.warning_label.opacity = 0.0
-            self.activate_label.text = "Error running inference, will try again..."
+        # try:
+        #     #
+        #     #
+        #     #
+        #     #
+        #     # pred_class = class_list[pred.argmax(axis=-1)]
+        #     #
+        #     # print(pred_class)
+        #
+        #     # processing pred as mask
+        #     # th, img_thresh = cv2.threshold(src=pred_img, thresh=0.5, maxval=255, type=cv2.THRESH_BINARY)
+        #
+        #     # new_img = np.expand_dims(img_thresh, axis=-1)
+        #     #
+        #     # # warning system, if proportion of mask is not big enough, WARN
+        #     # if cv2.countNonZero(new_img) / 103680 < self.warning_threshold:
+        #     #     self.warning_label.opacity = 1.0
+        #     #
+        #     #     # did warn ensures we only warn once per warn occurrence
+        #     #     if self.did_warn == False:
+        #     #         playsound('./assets/tesla_warn.mp3', False)
+        #     #         self.did_warn = True
+        #     # else:
+        #     #     self.warning_label.opacity = 0.0
+        #     #     self.did_warn = False
+        #     #
+        #     # new_img = new_img.astype(np.uint8)
+        #     # final_img = cv2.cvtColor(new_img, cv2.COLOR_GRAY2BGRA)
+        #     #
+        #     # final_img = cv2.flip(final_img, 0)
+        #     #
+        #     # final_img = cv2.resize(final_img, (1280, 720))
+        #     #
+        #     # self.latest_mask = final_img
+        # except:
+        #     self.warning_label.opacity = 0.0
+        #     self.activate_label.text = "Error running inference, will try again..."
 
     def update_settings(self, isWarningActive, warningThreshold, fpsValue):
         print("Update with new settings:")
@@ -205,7 +233,7 @@ class AppWindow(Screen):
         self.awarenessActivated = not self.awarenessActivated
         if self.awarenessActivated:
             self.activate_btn.ids.activate_btn_img.source = './assets/stop_circle_FILL0_wght400_GRAD0_opsz48.png'
-            self.activate_label.text = 'SafeTrax is Active'
+            self.activate_label.text = 'Monitor is Active'
             self.InferenceLoop = Clock.schedule_interval(self.update_mask_feed, self.INFERENCE_RATE)
         else:
             self.activate_btn.ids.activate_btn_img.source = './assets/play_circle_FILL0_wght400_GRAD0_opsz48.png'
