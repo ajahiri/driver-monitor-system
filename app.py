@@ -7,6 +7,7 @@ from kivy.graphics.texture import Texture
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
+from datetime import datetime
 
 # Warning system deps
 from playsound import playsound
@@ -81,6 +82,7 @@ class AppWindow(Screen):
 
         self.warning_label.opacity = 0.0
         self.did_warn = False
+        self.last_warn = datetime.timestamp(datetime.now())
 
         # check for camera devices
         self.cameraDevices = return_camera_indices()
@@ -161,6 +163,10 @@ class AppWindow(Screen):
         ]
 
         pred_class = class_list[pred.argmax(axis=-1)]
+
+        if datetime.timestamp(datetime.now()) - self.last_warn > 10:
+            self.last_warn = datetime.timestamp(datetime.now())
+            print("warning trigger")
 
         print(pred_class)
 
