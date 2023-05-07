@@ -13,13 +13,9 @@ from datetime import datetime
 from playsound import playsound
 
 # CNN deps
-import cv2
+import cv2 as cv
 import tensorflow as tf
 import numpy as np
-# import segmentation_models as sm
-# sm.set_framework('tf.keras')
-# sm.framework()
-
 
 # Define Widgets
 class RoundedImage(Widget):
@@ -45,7 +41,7 @@ def return_camera_indices():
     arr = []
     i = 10
     while i > 0:
-        cap = cv2.VideoCapture(index)
+        cap = cv.VideoCapture(index)
         if cap.read()[0]:
             arr.append(index)
             cap.release()
@@ -99,11 +95,10 @@ class AppWindow(Screen):
         try:
             # Load CNN model
             self.model = tf.keras.models.load_model(
-                './models/vgg_b_first.h5',
-                # custom_objects={"iou_score": sm.metrics.IOUScore}
+                './models/vgg_b_third.h5',
             )
             # Setup video capture device
-            self.capture = cv2.VideoCapture(self.cameraDevices[0])
+            self.capture = cv.VideoCapture(self.cameraDevices[0])
             Clock.schedule_interval(self.update_video_feed,
                                     self.CAMERA_RATE)
         except:
@@ -124,13 +119,13 @@ class AppWindow(Screen):
             return
 
         # Flip horizontal and convert image to texture
-        frame_flipped = cv2.flip(frame, 0)
-        frame_resized = cv2.resize(frame_flipped, (1280, 720)).tobytes()
-        # frame_alphad = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2BGRA)
+        frame_flipped = cv.flip(frame, 0)
+        frame_resized = cv.resize(frame_flipped, (1280, 720)).tobytes()
+        # frame_alphad = cv.cvtColor(frame_resized, cv.COLOR_BGR2BGRA)
         # final_frame_buf = None
         # if self.latest_mask is not None and self.awarenessActivated is True:
         #     # something...
-        #     final_frame_buf = cv2.addWeighted(frame_alphad, 1, self.latest_mask, 1, 0).tobytes()
+        #     final_frame_buf = cv.addWeighted(frame_alphad, 1, self.latest_mask, 1, 0).tobytes()
         # else:
         #     final_frame_buf = frame_alphad.tobytes()
 
@@ -142,9 +137,16 @@ class AppWindow(Screen):
         if self.activate_label.text != 'Monitor is Active':
             return
 
-        ret, image = self.capture.read()
-        img_target = cv2.flip(image, 0)
-        img_target_2 = cv2.resize(img_target,  (224, 224)) / 255.0
+        ret, target_im = self.capture.read()
+
+        # target = Image.fromarray(image, 'RGB')
+        # target = target.resize((224, 224))
+        # img_array = np.asarray(target)
+        # img_array = np.expand_dims(img_array, axis=0)
+
+        img_target = cv.flip(target_im, 0)
+        img_target_2 = cv.resize(img_target,  (224, 224)) / 255.0
+        # img_target_2 = cv.cvtColor(img_target_2, cv.BG)
         img_target_3 = np.expand_dims(img_target_2, axis=0)
 
         pred = self.model.predict(img_target_3)[0]
@@ -180,12 +182,12 @@ class AppWindow(Screen):
         #     # print(pred_class)
         #
         #     # processing pred as mask
-        #     # th, img_thresh = cv2.threshold(src=pred_img, thresh=0.5, maxval=255, type=cv2.THRESH_BINARY)
+        #     # th, img_thresh = cv.threshold(src=pred_img, thresh=0.5, maxval=255, type=cv.THRESH_BINARY)
         #
         #     # new_img = np.expand_dims(img_thresh, axis=-1)
         #     #
         #     # # warning system, if proportion of mask is not big enough, WARN
-        #     # if cv2.countNonZero(new_img) / 103680 < self.warning_threshold:
+        #     # if cv.countNonZero(new_img) / 103680 < self.warning_threshold:
         #     #     self.warning_label.opacity = 1.0
         #     #
         #     #     # did warn ensures we only warn once per warn occurrence
@@ -197,11 +199,11 @@ class AppWindow(Screen):
         #     #     self.did_warn = False
         #     #
         #     # new_img = new_img.astype(np.uint8)
-        #     # final_img = cv2.cvtColor(new_img, cv2.COLOR_GRAY2BGRA)
+        #     # final_img = cv.cvtColor(new_img, cv.COLOR_GRAY2BGRA)
         #     #
-        #     # final_img = cv2.flip(final_img, 0)
+        #     # final_img = cv.flip(final_img, 0)
         #     #
-        #     # final_img = cv2.resize(final_img, (1280, 720))
+        #     # final_img = cv.resize(final_img, (1280, 720))
         #     #
         #     # self.latest_mask = final_img
         # except:
@@ -230,7 +232,7 @@ class AppWindow(Screen):
             self.current_camera_index = self.cameraDevices[0]
         else:
             self.current_camera_index += 1
-            self.capture = cv2.VideoCapture(self.cameraDevices[self.current_camera_index])
+            self.capture = cv.VideoCapture(self.cameraDevices[self.current_camera_index])
 
 
     def toggle_awareness(self):
